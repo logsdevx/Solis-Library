@@ -1,5 +1,3 @@
--- FIXED
-
 local UserInputService = game:GetService('UserInputService')
 local LocalPlayer = game:GetService('Players').LocalPlayer
 local TweenService = game:GetService('TweenService')
@@ -119,9 +117,9 @@ function Library:toggle_visible()
 	end
 end
 
-function Library:__init()
-	self:load_flags()
-	self:clear()
+function Library.__init()
+	Library:load_flags()
+	Library:clear()
 
 	-- Root ScreenGui
 	local container = Instance.new("ScreenGui")
@@ -129,7 +127,7 @@ function Library:__init()
 	container.ResetOnSpawn = false
 	container.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	container.Parent = CoreGui
-	self.core = container
+	Library.core = container
 
 	-- Shadow
 	local Shadow = Instance.new("ImageLabel")
@@ -143,7 +141,7 @@ function Library:__init()
 	Shadow.Size = UDim2.new(0, 776, 0, 509)
 	Shadow.ZIndex = 0
 	Shadow.Image = "rbxassetid://17290899982"
-	self.Shadow = Shadow
+	Library.Shadow = Shadow
 
 	-- Main Container
 	local Container = Instance.new("Frame")
@@ -155,7 +153,7 @@ function Library:__init()
 	Container.ClipsDescendants = true
 	Container.Position = UDim2.new(0.5, 0, 0.5, 0)
 	Container.Size = UDim2.new(0, 699, 0, 426)
-	self.Container = Container
+	Library.Container = Container
 
 	local ContainerCorner = Instance.new("UICorner")
 	ContainerCorner.CornerRadius = UDim.new(0, 20)
@@ -277,7 +275,7 @@ function Library:__init()
 	mobile_button.TextColor3 = Color3.fromRGB(0, 0, 0)
 	mobile_button.TextSize = 14
 	mobile_button.Parent = container
-	self.Mobile = mobile_button
+	Library.Mobile = mobile_button
 
 	local MobileCorner = Instance.new("UICorner")
 	MobileCorner.CornerRadius = UDim.new(0, 13)
@@ -368,28 +366,28 @@ function Library:__init()
 	-- Main window dragging
 	Container.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			self.dragging = true
-			self.drag_position = input.Position
-			self.start_position = Container.Position
+			Library.dragging = true
+			Library.drag_position = input.Position
+			Library.start_position = Container.Position
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
-					self.dragging = false
-					self.drag_position = nil
-					self.start_position = nil
+					Library.dragging = false
+					Library.drag_position = nil
+					Library.start_position = nil
 				end
 			end)
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if self.dragging and self.drag_position and self.start_position then
+		if Library.dragging and Library.drag_position and Library.start_position then
 			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-				local delta = input.Position - self.drag_position
+				local delta = input.Position - Library.drag_position
 				local newPos = UDim2.new(
-					self.start_position.X.Scale,
-					self.start_position.X.Offset + delta.X,
-					self.start_position.Y.Scale,
-					self.start_position.Y.Offset + delta.Y
+					Library.start_position.X.Scale,
+					Library.start_position.X.Offset + delta.X,
+					Library.start_position.Y.Scale,
+					Library.start_position.Y.Offset + delta.Y
 				)
 				TweenService:Create(Container, TweenInfo.new(0.2), {Position = newPos}):Play()
 				TweenService:Create(Shadow, TweenInfo.new(0.2), {Position = newPos}):Play()
@@ -400,19 +398,19 @@ function Library:__init()
 	-- Keyboard toggle (Left/Right Ctrl)
 	UserInputService.InputBegan:Connect(function(input, process)
 		if process then return end
-		if not self:exist() then return end
+		if not Library:exist() then return end
 		if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
-			self:toggle_visible()
+			Library:toggle_visible()
 		end
 	end)
 
 	-- Mobile button click
 	mobile_button.MouseButton1Click:Connect(function()
-		self:toggle_visible()
+		Library:toggle_visible()
 	end)
 
 	-- ── Tab builder ──────────────────────────────────────────────────
-	function self:create_tab(tabName)
+	function Library:create_tab(tabName)
 		local tab = Instance.new("TextButton")
 		tab.Name = "Tab"
 		tab.BackgroundColor3 = Color3.fromRGB(27, 28, 33)
