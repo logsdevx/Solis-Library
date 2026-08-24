@@ -489,6 +489,9 @@ function Library.__init()
 		FillGradient.Rotation = 20
 		FillGradient.Parent = Fill
 
+		-- Check BEFORE parenting so we don't find ourselves
+		local isFirst = not Container:FindFirstChild("LeftSection")
+
 		-- Left section
 		local left_section = Instance.new("ScrollingFrame")
 		left_section.Name = "LeftSection"
@@ -500,6 +503,7 @@ function Library.__init()
 		left_section.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		left_section.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
 		left_section.ScrollBarThickness = 0
+		left_section.Visible = isFirst
 		left_section.Parent = Container
 
 		local leftList = Instance.new("UIListLayout")
@@ -523,6 +527,7 @@ function Library.__init()
 		right_section.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		right_section.ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
 		right_section.ScrollBarThickness = 0
+		right_section.Visible = isFirst
 		right_section.Parent = Container
 
 		local rightList = Instance.new("UIListLayout")
@@ -534,20 +539,6 @@ function Library.__init()
 		local rightPad = Instance.new("UIPadding")
 		rightPad.Parent = right_section
 		rightPad.PaddingTop = UDim.new(0, 7)
-
-		-- Hide or show based on whether this is the first tab
-		local isFirst = true
-		for _, obj in ipairs(Container:GetChildren()) do
-			if obj.Name == "LeftSection" and obj ~= left_section then
-				isFirst = false
-				break
-			end
-		end
-
-		if not isFirst then
-			left_section.Visible = false
-			right_section.Visible = false
-		end
 
 		-- Helper: make this tab active, hide all others
 		local function activateTab()
