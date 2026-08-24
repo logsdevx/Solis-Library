@@ -577,8 +577,8 @@ function Library.__init()
 		-- ── Module builder ──────────────────────────────────────────
 		local Module = {}
 
-		function Module.create_title()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_title(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 			local title = Instance.new("TextLabel")
 			title.Name = "Title"
 			title.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -593,7 +593,7 @@ function Library.__init()
 			title.TextSize = 14
 			title.TextWrapped = true
 			title.TextXAlignment = Enum.TextXAlignment.Left
-			title.Text = self.name
+			title.Text = opts.name
 			title.Parent = section
 		end
 
@@ -672,8 +672,8 @@ function Library.__init()
 			return Checkbox
 		end
 
-		function Module.create_toggle()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_toggle(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local toggle = Instance.new("TextButton")
 			toggle.Name = "Toggle"
@@ -706,25 +706,25 @@ function Library.__init()
 			ToggleLabel.TextSize = 14
 			ToggleLabel.TextWrapped = true
 			ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-			ToggleLabel.Text = self.name
+			ToggleLabel.Text = opts.name
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.enabled
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.enabled
 			end
 
-			updateToggleVisual(Library.Flags[self.flag], Checkbox)
-			self.callback(Library.Flags[self.flag])
+			updateToggleVisual(Library.Flags[opts.flag], Checkbox)
+			opts.callback(Library.Flags[opts.flag])
 
 			toggle.MouseButton1Click:Connect(function()
-				Library.Flags[self.flag] = not Library.Flags[self.flag]
+				Library.Flags[opts.flag] = not Library.Flags[opts.flag]
 				Library:save_flags()
-				updateToggleVisual(Library.Flags[self.flag], Checkbox)
-				self.callback(Library.Flags[self.flag])
+				updateToggleVisual(Library.Flags[opts.flag], Checkbox)
+				opts.callback(Library.Flags[opts.flag])
 			end)
 		end
 
-		function Module.create_description_toggle()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_description_toggle(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local toggle = Instance.new("TextButton")
 			toggle.Name = "Toggle"
@@ -756,7 +756,7 @@ function Library.__init()
 			NameLabel.TextSize = 14
 			NameLabel.TextWrapped = true
 			NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-			NameLabel.Text = self.name
+			NameLabel.Text = opts.name
 
 			local DescLabel = Instance.new("TextLabel")
 			DescLabel.Parent = toggle
@@ -772,25 +772,25 @@ function Library.__init()
 			DescLabel.TextSize = 14
 			DescLabel.TextWrapped = true
 			DescLabel.TextXAlignment = Enum.TextXAlignment.Left
-			DescLabel.Text = self.description or ""
+			DescLabel.Text = opts.description or ""
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.enabled
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.enabled
 			end
 
-			updateToggleVisual(Library.Flags[self.flag], Checkbox)
-			self.callback(Library.Flags[self.flag])
+			updateToggleVisual(Library.Flags[opts.flag], Checkbox)
+			opts.callback(Library.Flags[opts.flag])
 
 			toggle.MouseButton1Click:Connect(function()
-				Library.Flags[self.flag] = not Library.Flags[self.flag]
+				Library.Flags[opts.flag] = not Library.Flags[opts.flag]
 				Library:save_flags()
-				updateToggleVisual(Library.Flags[self.flag], Checkbox)
-				self.callback(Library.Flags[self.flag])
+				updateToggleVisual(Library.Flags[opts.flag], Checkbox)
+				opts.callback(Library.Flags[opts.flag])
 			end)
 		end
 
-		function Module.create_paragraph()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_paragraph(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local Paragraph = Instance.new("Frame")
 			Paragraph.Name = "Paragraph"
@@ -816,7 +816,7 @@ function Library.__init()
 			NameLabel.TextSize = 14
 			NameLabel.TextWrapped = true
 			NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-			NameLabel.Text = self.name
+			NameLabel.Text = opts.name
 
 			local TitleLabel = Instance.new("TextLabel")
 			TitleLabel.Parent = Paragraph
@@ -832,11 +832,11 @@ function Library.__init()
 			TitleLabel.TextSize = 14
 			TitleLabel.TextWrapped = true
 			TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-			TitleLabel.Text = self.title or ""
+			TitleLabel.Text = opts.title or ""
 		end
 
-		function Module.create_button()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_button(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local button = Instance.new("TextButton")
 			button.Name = "Button"
@@ -866,15 +866,15 @@ function Library.__init()
 			BtnLabel.TextSize = 14
 			BtnLabel.TextWrapped = true
 			BtnLabel.TextXAlignment = Enum.TextXAlignment.Left
-			BtnLabel.Text = self.name
+			BtnLabel.Text = opts.name
 
 			button.MouseButton1Click:Connect(function()
-				self.callback()
+				opts.callback()
 			end)
 		end
 
-		function Module.create_slider()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_slider(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local slider = Instance.new("TextButton")
 			slider.Name = "Slider"
@@ -970,7 +970,7 @@ function Library.__init()
 			SliderLabel.TextSize = 14
 			SliderLabel.TextWrapped = true
 			SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-			SliderLabel.Text = self.name
+			SliderLabel.Text = opts.name
 
 			local Number = Instance.new("TextLabel")
 			Number.Name = "Number"
@@ -988,17 +988,17 @@ function Library.__init()
 			Number.TextWrapped = true
 			Number.TextXAlignment = Enum.TextXAlignment.Right
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.value
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.value
 			end
 
-			Number.Text = tostring(Library.Flags[self.flag])
-			self.callback(Library.Flags[self.flag])
+			Number.Text = tostring(Library.Flags[opts.flag])
+			opts.callback(Library.Flags[opts.flag])
 
-			local minVal = self.minimum_value
-			local maxVal = self.maximum_value
-			local flag = self.flag
-			local cb = self.callback
+			local minVal = opts.minimum_value
+			local maxVal = opts.maximum_value
+			local flag = opts.flag
+			local cb = opts.callback
 
 			local function updateSlider()
 				local result = math.clamp(
@@ -1047,8 +1047,8 @@ function Library.__init()
 			end)
 		end
 
-		function Module.create_dropdown()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_dropdown(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 			local list_size = 0
 			local open = false
 
@@ -1139,11 +1139,11 @@ function Library.__init()
 			Arrow.ZIndex = 7
 			Arrow.Image = "rbxassetid://17400678941"
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.option
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.option
 			end
 
-			BoxLabel.Text = self.name
+			BoxLabel.Text = opts.name
 
 			-- Build option template
 			local optionTemplate = Instance.new("TextButton")
@@ -1165,7 +1165,7 @@ function Library.__init()
 
 			local function closeDropdown()
 				open = false
-				BoxLabel.Text = self.name
+				BoxLabel.Text = opts.name
 				TweenService:Create(Options, TweenInfo.new(0.4), {Size = UDim2.new(0, 202, 0, 0)}):Play()
 				TweenService:Create(dropdown, TweenInfo.new(0.4), {Size = UDim2.new(0, 215, 0, 36)}):Play()
 				TweenService:Create(Arrow, TweenInfo.new(0.4), {Rotation = 0}):Play()
@@ -1173,7 +1173,7 @@ function Library.__init()
 
 			local function openDropdown()
 				open = true
-				BoxLabel.Text = tostring(Library.Flags[self.flag])
+				BoxLabel.Text = tostring(Library.Flags[opts.flag])
 				TweenService:Create(Options, TweenInfo.new(0.4), {Size = UDim2.new(0, 202, 0, list_size)}):Play()
 				TweenService:Create(dropdown, TweenInfo.new(0.4), {Size = UDim2.new(0, 215, 0, 30 + list_size)}):Play()
 				TweenService:Create(Arrow, TweenInfo.new(0.4), {Rotation = 180}):Play()
@@ -1186,16 +1186,16 @@ function Library.__init()
 				end
 				list_size = 0
 
-				for _, value in ipairs(self.options) do
+				for _, value in ipairs(opts.options) do
 					list_size += 23
 					local newOpt = optionTemplate:Clone()
 					newOpt.Parent = Options
 					newOpt.Text = tostring(value)
-					newOpt.TextTransparency = (value == Library.Flags[self.flag]) and 0 or 0.5
+					newOpt.TextTransparency = (value == Library.Flags[opts.flag]) and 0 or 0.5
 
 					newOpt.MouseButton1Click:Connect(function()
-						Library.Flags[self.flag] = value
-						self.callback(Library.Flags[self.flag])
+						Library.Flags[opts.flag] = value
+						opts.callback(Library.Flags[opts.flag])
 						Library:save_flags()
 
 						-- Update transparencies
@@ -1208,14 +1208,14 @@ function Library.__init()
 						end
 
 						if open then
-							BoxLabel.Text = tostring(Library.Flags[self.flag])
+							BoxLabel.Text = tostring(Library.Flags[opts.flag])
 						end
 					end)
 				end
 			end
 
 			populateOptions()
-			self.callback(Library.Flags[self.flag])
+			opts.callback(Library.Flags[opts.flag])
 
 			dropdown.MouseButton1Click:Connect(function()
 				open = not open
@@ -1225,14 +1225,14 @@ function Library.__init()
 			-- Return a Dropdown object with an update method
 			local DropdownObj = {}
 			function DropdownObj:update(newOptions)
-				self.options = newOptions
+				opts.options = newOptions
 				populateOptions()
 			end
 			return DropdownObj
 		end
 
-		function Module.create_image()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_image(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 			local image = Instance.new("ImageLabel")
 			image.Name = "Game"
 			image.Parent = section
@@ -1240,14 +1240,14 @@ function Library.__init()
 			image.Position = UDim2.new(0.5, 0, 0.5, 0)
 			image.Size = UDim2.new(0, 215, 0, 120)
 			image.BackgroundTransparency = 1
-			image.Image = self.image
+			image.Image = opts.image
 			local ic = Instance.new("UICorner")
 			ic.CornerRadius = UDim.new(0, 7)
 			ic.Parent = image
 		end
 
-		function Module.create_textbox()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_textbox(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 			local TextboxObj = {}
 
 			local textbox = Instance.new("Frame")
@@ -1292,37 +1292,37 @@ function Library.__init()
 			TextHolder.ZIndex = 2
 			TextHolder.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
 			TextHolder.Text = ""
-			TextHolder.PlaceholderText = self.name
+			TextHolder.PlaceholderText = opts.name
 			TextHolder.TextColor3 = Color3.fromRGB(255, 255, 255)
 			TextHolder.TextSize = 14
 			TextHolder.TextXAlignment = Enum.TextXAlignment.Left
 			TextHolder.ClearTextOnFocus = false
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.value or ""
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.value or ""
 			else
-				TextHolder.Text = tostring(Library.Flags[self.flag])
+				TextHolder.Text = tostring(Library.Flags[opts.flag])
 			end
 
-			self.callback(Library.Flags[self.flag])
+			opts.callback(Library.Flags[opts.flag])
 
 			TextHolder.FocusLost:Connect(function()
-				Library.Flags[self.flag] = TextHolder.Text
-				self.callback(TextHolder.Text)
+				Library.Flags[opts.flag] = TextHolder.Text
+				opts.callback(TextHolder.Text)
 				Library:save_flags()
 			end)
 
 			function TextboxObj:update(text)
 				TextHolder.Text = tostring(text)
-				Library.Flags[self.flag] = text
-				self.callback(text)
+				Library.Flags[opts.flag] = text
+				opts.callback(text)
 			end
 
 			return TextboxObj
 		end
 
-		function Module.create_keybind()
-			local section = (self.section == 'left') and left_section or right_section
+		function Module.create_keybind(opts)
+			local section = (opts.section == 'left') and left_section or right_section
 
 			local keybind = Instance.new("TextButton")
 			keybind.Name = "Keybind"
@@ -1352,7 +1352,7 @@ function Library.__init()
 			KBLabel.TextSize = 14
 			KBLabel.TextWrapped = true
 			KBLabel.TextXAlignment = Enum.TextXAlignment.Left
-			KBLabel.Text = self.name
+			KBLabel.Text = opts.name
 
 			local KBBox = Instance.new("Frame")
 			KBBox.Name = "Box"
@@ -1380,11 +1380,11 @@ function Library.__init()
 			KBKeyLabel.TextSize = 14
 			KBKeyLabel.TextWrapped = true
 
-			if Library.Flags[self.flag] == nil then
-				Library.Flags[self.flag] = self.keycode.Name
+			if Library.Flags[opts.flag] == nil then
+				Library.Flags[opts.flag] = opts.keycode.Name
 			end
 
-			KBKeyLabel.Text = tostring(Library.Flags[self.flag])
+			KBKeyLabel.Text = tostring(Library.Flags[opts.flag])
 
 			local listening = false
 			keybind.MouseButton1Click:Connect(function()
@@ -1397,21 +1397,33 @@ function Library.__init()
 					input = UserInputService.InputBegan:Wait()
 				end
 				KBKeyLabel.Text = input.KeyCode.Name
-				Library.Flags[self.flag] = input.KeyCode.Name
+				Library.Flags[opts.flag] = input.KeyCode.Name
 				Library:save_flags()
 				listening = false
 			end)
 
 			UserInputService.InputBegan:Connect(function(current, processed)
 				if not processed then
-					if current.KeyCode.Name == Library.Flags[self.flag] then
-						self.callback(Library.Flags[self.flag])
+					if current.KeyCode.Name == Library.Flags[opts.flag] then
+						opts.callback(Library.Flags[opts.flag])
 					end
 				end
 			end)
 		end
 
-		return Module
+		-- Wrap Module so MainTab:create_X(opts) passes opts as first real arg
+		local wrapper = {}
+		setmetatable(wrapper, {
+			__index = function(_, key)
+				local fn = Module[key]
+				if fn then
+					return function(_, opts)
+						return fn(opts)
+					end
+				end
+			end
+		})
+		return wrapper
 	end
 end
 
