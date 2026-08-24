@@ -577,7 +577,7 @@ function Library.__init()
 		-- ── Module builder ──────────────────────────────────────────
 		local Module = {}
 
-		function Module:create_title()
+		function Module.create_title()
 			local section = (self.section == 'left') and left_section or right_section
 			local title = Instance.new("TextLabel")
 			title.Name = "Title"
@@ -672,7 +672,7 @@ function Library.__init()
 			return Checkbox
 		end
 
-		function Module:create_toggle()
+		function Module.create_toggle()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local toggle = Instance.new("TextButton")
@@ -723,7 +723,7 @@ function Library.__init()
 			end)
 		end
 
-		function Module:create_description_toggle()
+		function Module.create_description_toggle()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local toggle = Instance.new("TextButton")
@@ -789,7 +789,7 @@ function Library.__init()
 			end)
 		end
 
-		function Module:create_paragraph()
+		function Module.create_paragraph()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local Paragraph = Instance.new("Frame")
@@ -835,7 +835,7 @@ function Library.__init()
 			TitleLabel.Text = self.title or ""
 		end
 
-		function Module:create_button()
+		function Module.create_button()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local button = Instance.new("TextButton")
@@ -873,7 +873,7 @@ function Library.__init()
 			end)
 		end
 
-		function Module:create_slider()
+		function Module.create_slider()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local slider = Instance.new("TextButton")
@@ -1047,7 +1047,7 @@ function Library.__init()
 			end)
 		end
 
-		function Module:create_dropdown()
+		function Module.create_dropdown()
 			local section = (self.section == 'left') and left_section or right_section
 			local list_size = 0
 			local open = false
@@ -1231,7 +1231,7 @@ function Library.__init()
 			return DropdownObj
 		end
 
-		function Module:create_image()
+		function Module.create_image()
 			local section = (self.section == 'left') and left_section or right_section
 			local image = Instance.new("ImageLabel")
 			image.Name = "Game"
@@ -1246,7 +1246,7 @@ function Library.__init()
 			ic.Parent = image
 		end
 
-		function Module:create_textbox()
+		function Module.create_textbox()
 			local section = (self.section == 'left') and left_section or right_section
 			local TextboxObj = {}
 
@@ -1321,7 +1321,7 @@ function Library.__init()
 			return TextboxObj
 		end
 
-		function Module:create_keybind()
+		function Module.create_keybind()
 			local section = (self.section == 'left') and left_section or right_section
 
 			local keybind = Instance.new("TextButton")
