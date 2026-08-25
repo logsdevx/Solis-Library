@@ -1,8 +1,11 @@
+-- logs custom lib
+
 local UserInputService = game:GetService('UserInputService')
 local LocalPlayer = game:GetService('Players').LocalPlayer
 local TweenService = game:GetService('TweenService')
 local HttpService = game:GetService('HttpService')
 local CoreGui = game:GetService('CoreGui')
+local GuiService = game:GetService('GuiService')
 
 local Mouse = LocalPlayer:GetMouse()
 
@@ -15,6 +18,8 @@ local Library = {
 	dragging = false,
 	drag_position = nil,
 	start_position = nil,
+	is_fullscreen = false,
+	notify_count = 0,
 }
 
 if not isfolder("Visual") then
@@ -65,6 +70,12 @@ Library.clear()
 -- Forward declare container reference so open/close/drag can use it
 local _container = nil
 
+-- Stored normal size/position for fullscreen restore
+local _normal_container_size = UDim2.new(0, 699, 0, 426)
+local _normal_container_pos  = UDim2.new(0.5, 0, 0.5, 0)
+local _normal_shadow_size    = UDim2.new(0, 776, 0, 509)
+local _normal_shadow_pos     = UDim2.new(0.508668244, 0, 0.5, 0)
+
 function Library:open()
 	if not _container then return end
 	_container.Container.Visible = true
@@ -72,11 +83,11 @@ function Library:open()
 	_container.Mobile.Modal = true
 
 	TweenService:Create(_container.Container, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
-		Size = UDim2.new(0, 699, 0, 426)
+		Size = Library.is_fullscreen and UDim2.new(1, 0, 1, 0) or _normal_container_size
 	}):Play()
 
 	TweenService:Create(_container.Shadow, TweenInfo.new(0.6, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
-		Size = UDim2.new(0, 776, 0, 509)
+		Size = Library.is_fullscreen and UDim2.new(1, 60, 1, 80) or _normal_shadow_size
 	}):Play()
 end
 
@@ -111,6 +122,191 @@ function Library:toggle_visible()
 	end
 end
 
+-- ──────────────────────────────────────────────────────────
+-- NOTIFICATION SYSTEM
+-- ──────────────────────────────────────────────────────────
+-- opts: { title, description, duration }
+-- duration defaults to 4 seconds
+
+local _notify_holder = nil  -- filled in __init
+
+local NOTIFY_WIDTH  = 280
+local NOTIFY_HEIGHT = 64
+local NOTIFY_GAP    = 8
+local NOTIFY_INSET  = 16    -- from right/bottom edge
+
+function Library:notify(opts)
+	if not _notify_holder then return end
+	opts = opts or {}
+	local title       = opts.title or "Notification"
+	local description = opts.description or ""
+	local duration    = opts.duration or 4
+
+	Library.notify_count += 1
+
+	-- Outer card
+	local card = Instance.new("Frame")
+	card.Name = "Notify_" .. Library.notify_count
+	card.BackgroundColor3 = Color3.fromRGB(27, 28, 33)
+	card.BorderSizePixel = 0
+	card.Size = UDim2.new(0, NOTIFY_WIDTH, 0, NOTIFY_HEIGHT)
+	card.Position = UDim2.new(1, NOTIFY_WIDTH + 20, 0, 0)  -- starts off-screen right
+	card.ClipsDescendants = false
+	card.Parent = _notify_holder
+
+	local UICorner_card = Instance.new("UICorner")
+	UICorner_card.CornerRadius = UDim.new(0, 10)
+	UICorner_card.Parent = card
+
+	-- Glow / shadow
+	local GlowImg = Instance.new("ImageLabel")
+	GlowImg.Name = "Shadow"
+	GlowImg.Parent = card
+	GlowImg.AnchorPoint = Vector2.new(0.5, 0.5)
+	GlowImg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	GlowImg.BackgroundTransparency = 1
+	GlowImg.BorderSizePixel = 0
+	GlowImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+	GlowImg.Size = UDim2.new(1, 60, 1, 50)
+	GlowImg.ZIndex = 0
+	GlowImg.Image = "rbxassetid://17290899982"
+
+	-- Accent left bar (gradient blue, same as tab fill)
+	local Accent = Instance.new("Frame")
+	Accent.Name = "Accent"
+	Accent.Parent = card
+	Accent.BorderSizePixel = 0
+	Accent.Position = UDim2.new(0, 0, 0.15, 0)
+	Accent.Size = UDim2.new(0, 3, 0.7, 0)
+	Accent.BackgroundColor3 = Color3.fromRGB(66, 89, 182)
+	Accent.ZIndex = 2
+
+	local UICorner_acc = Instance.new("UICorner")
+	UICorner_acc.CornerRadius = UDim.new(0, 4)
+	UICorner_acc.Parent = Accent
+
+	local UIGrad_acc = Instance.new("UIGradient")
+	UIGrad_acc.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(66, 89, 182)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(37, 57, 137))
+	}
+	UIGrad_acc.Rotation = 90
+	UIGrad_acc.Parent = Accent
+
+	-- Title label
+	local TitleLabel = Instance.new("TextLabel")
+	TitleLabel.Name = "Title"
+	TitleLabel.Parent = card
+	TitleLabel.BackgroundTransparency = 1
+	TitleLabel.BorderSizePixel = 0
+	TitleLabel.Position = UDim2.new(0, 16, 0, 10)
+	TitleLabel.Size = UDim2.new(1, -20, 0, 16)
+	TitleLabel.ZIndex = 2
+	TitleLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
+	TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TitleLabel.TextScaled = true
+	TitleLabel.TextWrapped = true
+	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TitleLabel.Text = title
+
+	-- Description label
+	local DescLabel = Instance.new("TextLabel")
+	DescLabel.Name = "Description"
+	DescLabel.Parent = card
+	DescLabel.BackgroundTransparency = 1
+	DescLabel.BorderSizePixel = 0
+	DescLabel.Position = UDim2.new(0, 16, 0, 30)
+	DescLabel.Size = UDim2.new(1, -20, 0, 24)
+	DescLabel.ZIndex = 2
+	DescLabel.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.SemiBold)
+	DescLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+	DescLabel.TextScaled = true
+	DescLabel.TextWrapped = true
+	DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+	DescLabel.Text = description
+
+	-- Progress bar background
+	local BarBG = Instance.new("Frame")
+	BarBG.Name = "BarBG"
+	BarBG.Parent = card
+	BarBG.BackgroundColor3 = Color3.fromRGB(22, 23, 27)
+	BarBG.BorderSizePixel = 0
+	BarBG.Position = UDim2.new(0, 8, 1, -6)
+	BarBG.Size = UDim2.new(1, -16, 0, 3)
+	BarBG.ZIndex = 2
+
+	local UICorner_bar = Instance.new("UICorner")
+	UICorner_bar.CornerRadius = UDim.new(0, 4)
+	UICorner_bar.Parent = BarBG
+
+	-- Progress bar fill
+	local BarFill = Instance.new("ImageLabel")
+	BarFill.Name = "Fill"
+	BarFill.Parent = BarBG
+	BarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	BarFill.BackgroundTransparency = 1
+	BarFill.BorderSizePixel = 0
+	BarFill.AnchorPoint = Vector2.new(0, 0.5)
+	BarFill.Position = UDim2.new(0, 0, 0.5, 0)
+	BarFill.Size = UDim2.new(1, 0, 1, 0)
+	BarFill.ZIndex = 3
+	BarFill.Image = "rbxassetid://17382033116"
+
+	local UICorner_barfill = Instance.new("UICorner")
+	UICorner_barfill.CornerRadius = UDim.new(0, 4)
+	UICorner_barfill.Parent = BarFill
+
+	local UIGrad_bar = Instance.new("UIGradient")
+	UIGrad_bar.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(66, 89, 182)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(37, 57, 137))
+	}
+	UIGrad_bar.Parent = BarFill
+
+	-- Reposition all existing notifications upward (stack from bottom)
+	local function restack()
+		local children = {}
+		for _, c in _notify_holder:GetChildren() do
+			if c:IsA("Frame") then
+				table.insert(children, c)
+			end
+		end
+		-- sort by LayoutOrder so newest is at bottom
+		table.sort(children, function(a, b) return a.LayoutOrder < b.LayoutOrder end)
+		local total = #children
+		for i, c in children do
+			local offsetY = (total - i) * (NOTIFY_HEIGHT + NOTIFY_GAP)
+			TweenService:Create(c, TweenInfo.new(0.35, Enum.EasingStyle.Circular, Enum.EasingDirection.Out), {
+				Position = UDim2.new(0, 0, 1, -(offsetY + NOTIFY_HEIGHT))
+			}):Play()
+		end
+	end
+
+	card.LayoutOrder = Library.notify_count
+
+	-- Slide in
+	restack()
+
+	-- Animate progress bar countdown
+	TweenService:Create(BarFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+		Size = UDim2.new(0, 0, 1, 0)
+	}):Play()
+
+	-- After duration, slide out then destroy
+	task.delay(duration, function()
+		local slide_out = TweenService:Create(card, TweenInfo.new(0.5, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+			Position = UDim2.new(1, NOTIFY_WIDTH + 20, card.Position.Y.Scale, card.Position.Y.Offset)
+		})
+		slide_out:Play()
+		slide_out.Completed:Once(function()
+			card:Destroy()
+			restack()
+		end)
+	end)
+end
+
+-- ──────────────────────────────────────────────────────────
+
 function Library.__init()
 	local container = Instance.new("ScreenGui")
 	container.Name = "Visual"
@@ -120,6 +316,19 @@ function Library.__init()
 
 	Library.core = container
 	_container = container
+
+	-- Notification holder (anchored bottom-right, clips nothing)
+	local notify_holder = Instance.new("Frame")
+	notify_holder.Name = "NotifyHolder"
+	notify_holder.Parent = container
+	notify_holder.BackgroundTransparency = 1
+	notify_holder.BorderSizePixel = 0
+	notify_holder.AnchorPoint = Vector2.new(1, 1)
+	notify_holder.Position = UDim2.new(1, -NOTIFY_INSET, 1, -NOTIFY_INSET)
+	notify_holder.Size = UDim2.new(0, NOTIFY_WIDTH, 1, -NOTIFY_INSET * 2)
+	notify_holder.ZIndex = 100
+	notify_holder.ClipsDescendants = false
+	_notify_holder = notify_holder
 
 	local Shadow = Instance.new("ImageLabel")
 	Shadow.Name = "Shadow"
@@ -159,7 +368,8 @@ function Library.__init()
 	Top.Size = UDim2.new(0, 699, 0, 39)
 	Top.Image = "rbxassetid://17290652150"
 
-	local Logo = Instance.new("ImageLabel")
+	-- ── FULLSCREEN LOGO BUTTON ──────────────────────────────
+	local Logo = Instance.new("ImageButton")
 	Logo.Name = "Logo"
 	Logo.Parent = Top
 	Logo.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -170,6 +380,45 @@ function Library.__init()
 	Logo.Position = UDim2.new(0.950000048, 0, 0.5, 0)
 	Logo.Size = UDim2.new(0, 20, 0, 20)
 	Logo.Image = "rbxassetid://110130056211155"
+	Logo.AutoButtonColor = false
+	Logo.ZIndex = 5
+
+	-- Fullscreen toggle logic
+	Logo.MouseButton1Click:Connect(function()
+		Library.is_fullscreen = not Library.is_fullscreen
+
+		if Library.is_fullscreen then
+			-- Save current position before going fullscreen
+			_normal_container_pos = Container.Position
+			_normal_shadow_pos    = Shadow.Position
+
+			-- Animate to fullscreen
+			TweenService:Create(Container, TweenInfo.new(0.55, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+				Size     = UDim2.new(1, 0, 1, 0),
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}):Play()
+			TweenService:Create(Shadow, TweenInfo.new(0.55, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+				Size     = UDim2.new(1, 80, 1, 80),
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}):Play()
+
+			-- Swap icon to a "restore" / compress icon
+			Logo.Image = "rbxassetid://9354552724"
+		else
+			-- Restore
+			TweenService:Create(Container, TweenInfo.new(0.55, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+				Size     = _normal_container_size,
+				Position = _normal_container_pos
+			}):Play()
+			TweenService:Create(Shadow, TweenInfo.new(0.55, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut), {
+				Size     = _normal_shadow_size,
+				Position = _normal_shadow_pos
+			}):Play()
+
+			Logo.Image = "rbxassetid://110130056211155"
+		end
+	end)
+	-- ────────────────────────────────────────────────────────
 
 	local HubNameLabel = Instance.new("TextLabel")
 	HubNameLabel.Parent = Top
@@ -449,12 +698,13 @@ function Library.__init()
 		end
 	end)
 
-	-- Main window dragging
+	-- Main window dragging (disabled when fullscreen)
 	local mainDragging = false
 	local mainDragPos = nil
 	local mainStartPos = nil
 
 	Container.InputBegan:Connect(function(input)
+		if Library.is_fullscreen then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			mainDragging = true
 			mainDragPos = input.Position
@@ -471,6 +721,7 @@ function Library.__init()
 
 	UserInputService.InputChanged:Connect(function(input)
 		if not mainDragging then return end
+		if Library.is_fullscreen then return end
 		if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
 		if not mainDragPos or not mainStartPos then return end
 
@@ -483,6 +734,10 @@ function Library.__init()
 		)
 		TweenService:Create(Container, TweenInfo.new(0.1), {Position = newPos}):Play()
 		TweenService:Create(Shadow, TweenInfo.new(0.1), {Position = newPos}):Play()
+
+		-- Keep track of normal position while dragging so fullscreen restore is accurate
+		_normal_container_pos = newPos
+		_normal_shadow_pos    = newPos
 	end)
 
 	-- Toggle visibility with Left Control
@@ -689,7 +944,6 @@ function Library.__init()
 		end
 
 		if isFirst then
-			-- Open immediately without tween overhead
 			Tab.open_tab({
 				tab = tab,
 				left_section = left_section,
@@ -1416,7 +1670,6 @@ function Library.__init()
 				end
 			end)
 
-			-- Return a Dropdown handle with an update method
 			local Dropdown = {}
 			function Dropdown:update(new_options)
 				opts.options = new_options
